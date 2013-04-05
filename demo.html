@@ -9,12 +9,12 @@
 <body>
 
 <!-- our handlebars template -->
-<script type="text/html" id="hello-template">
+<script type="text/html" name="hello">
 	<p><a href="#" id="click-me">Hello {{name}}</a></p>
 </script>
 
 <!-- the div to insert the content into -->
-<div id="hello-world"></div>
+<div id="hello"></div>
 
 <script>
 // pick a random name
@@ -24,26 +24,14 @@ function random_name () {
 }
 
 $(function () {
-	// compile the template (note: assumes Handlebars.templates array
-	// from Handlebars precompiler, so this is how we define them)
-	Handlebars.templates = [];
-	Handlebars.templates['hello-template'] = Handlebars.compile ($('#hello-template').html ());
-
 	// define our view
 	view.add ({
 		name: 'hello',
-		selector: '#hello-world',
-		template: 'hello-template',
-		callback: function (el) {
-			// you can access the view as this
-			console.log ('Rendered view: ' + this.name);
-			console.log ('With the name: ' + this.data.name);
-			
-			// add event listeners here
-			$(el).find ('#click-me').click (function () {
-				console.log ('Clicked!');
+		events: {
+			'click #click-me': function (event) {
+				event.preventDefault ();
 				view.hello.render ({name: random_name ()});
-			});
+			}
 		}
 	});
 	

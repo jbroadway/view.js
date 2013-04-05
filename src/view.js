@@ -12,7 +12,7 @@
  * Usage:
  *
  *     <!-- our handlebars template -->
- *     <script type="text/html" id="hello-template">
+ *     <script type="text/html" name="hello-template">
  *         <p><a href="#" id="click-me">Hello {{name}}</a></p>
  *     </script>
  *     
@@ -26,15 +26,17 @@
  *             name: 'hello',
  *             selector: '#hello-world',
  *             template: 'hello-template',
+ *             events: {
+ *                 // add event listeners here
+ *                 'click #click-me': function () {
+ *                     alert ('Clicked!');
+ *                 }
+ *             },
  *             callback: function (el) {
- *                 // you can access the view as this
+ *                 // called after view is rendered and events are
+ *                 // bound. you can access the view as 'this'
  *                 console.log ('Rendered view: ' + this.name);
  *                 console.log ('With the name: ' + this.data.name);
- *                 
- *                 // add event listeners here
- *                 $(el).find ('#click-me').click (function () {
- *                     alert ('Clicked!');
- *                 });
  *             }
  *         });
  *         
@@ -73,6 +75,13 @@ var view = (function ($) {
 	 * Shorter syntax for calling handlebars templates.
 	 */
 	var _tpl = function (tpl, data) {
+		if (! Handlebars.templates) {
+			Handlebars.templates = [];
+		}
+		if (! Handlebars.templates[tpl]) {
+			var src = $('script[name="' + tpl + '"]').html ();
+			Handlebars.templates[tpl] = Handlebars.compile (src);
+		}
 		return Handlebars.templates[tpl] (data);
 	};
 
@@ -93,6 +102,11 @@ var view = (function ($) {
 		var selector = _fill (this.selector, this.template, this.data),
 			view = this;
 
+		for (var i in this.events) {
+			var evt = i.split (' ', 2);
+			$(selector).on (evt[0], evt[1], this.events[i]);
+		}
+
 		if (this.callback) {
 			return this.callback (selector);
 		}
@@ -111,14 +125,15 @@ var view = (function ($) {
 	 */
 	self.add = function (view) {
 		if (! _has (view, 'name')) throw new Error ('Required: name');
-		if (! _has (view, 'selector')) throw new Error ('Required: selector');
-		if (! _has (view, 'template')) throw new Error ('Required: template');
+		if (! _has (view, 'selector')) view.selector = '#' + view.name;
+		if (! _has (view, 'template')) view.template = view.name;
 
 		var defaults = {
 			selector: null,
 			template: null,
 			callback: null,
 			hide: null,
+			events: {},
 			data: {}
 		};
 

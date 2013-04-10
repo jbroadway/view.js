@@ -119,7 +119,7 @@ var view = (function ($) {
 	 * Attach events to the view.
 	 */
 	var _attach_events = function () {
-		console.log ('attaching events (' + this.name + ')');
+		_log ('attaching events (' + this.name + ')');
 		for (var i in this.events) {
 			var evt = i.split (' ', 2);
 			$(this.selector).on (evt[0], evt[1], this.events[i]);
@@ -130,7 +130,7 @@ var view = (function ($) {
 	 * Detach events from the view.
 	 */
 	var _detach_events = function () {
-		console.log ('detaching events (' + this.name + ')');
+		_log ('detaching events (' + this.name + ')');
 		for (var i in this.events) {
 			var evt = i.split (' ', 2);
 			$(this.selector).off (evt[0], evt[1], this.events[i]);

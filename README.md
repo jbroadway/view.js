@@ -60,8 +60,8 @@ object as its first parameter. For example:
 view.add ({
 	name: 'my_view',
 	callback: function (el) {
-		// replace everything with the view name
-		el.html (this.name);
+		// show modal dialog
+		el.modal ();
 	}
 });
 ```
@@ -102,6 +102,21 @@ This is the only required property.
 
 If the ID of the selector and the name of the template match the name of the view, then
 you can omit them from the `view.add()` parameters.
+
+### on_hide
+
+A function to call when the view has been hidden and the events have been detached.
+This function receives the view object as `this`. For example:
+
+```javascript
+view.add ({
+	name: 'my_view',
+	on_hide: function () {
+		// hide modal dialog
+		$(this.selector).modal ('hide');
+	}
+});
+```
 
 ### render(data)
 

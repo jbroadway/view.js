@@ -8,6 +8,7 @@
  * Homepage: https://github.com/jbroadway/view.js
  * License: MIT
  * Author: Johnny Broadway <johnny@johnnybroadway.com>
+ * Version: 0.2.0
  *
  * Usage:
  *
@@ -102,10 +103,11 @@ var view = (function ($) {
 		var selector = _fill (this.selector, this.template, this.data),
 			view = this;
 
-		for (var i in this.events) {
-			var evt = i.split (' ', 2);
-			$(selector).on (evt[0], evt[1], this.events[i]);
+		if (this.active) {
+			this.detach_events ();
 		}
+		this.attach_events ();
+		this.active = true;
 
 		if (this.callback) {
 			return this.callback (selector);
@@ -114,10 +116,37 @@ var view = (function ($) {
 	};
 
 	/**
+	 * Attach events to the view.
+	 */
+	var _attach_events = function () {
+		console.log ('attaching events (' + this.name + ')');
+		for (var i in this.events) {
+			var evt = i.split (' ', 2);
+			$(this.selector).on (evt[0], evt[1], this.events[i]);
+		}
+	};
+
+	/**
+	 * Detach events from the view.
+	 */
+	var _detach_events = function () {
+		console.log ('detaching events (' + this.name + ')');
+		for (var i in this.events) {
+			var evt = i.split (' ', 2);
+			$(this.selector).off (evt[0], evt[1], this.events[i]);
+		}
+	};
+
+	/**
 	 * Hide the element surrounding the view.
 	 */
 	var _hide = function () {
-		$(this.selector).hide ();
+		this.active = false;
+		this.detach_events ();
+		$(this.selector).html ('').hide ();
+		if (this.on_hide !== null) {
+			this.on_hide ();
+		}
 	};
 
 	/**
@@ -129,21 +158,25 @@ var view = (function ($) {
 		if (! _has (view, 'template')) view.template = view.name;
 
 		var defaults = {
+			active: false,
 			selector: null,
 			template: null,
 			callback: null,
 			hide: null,
+			on_hide: null,
 			events: {},
 			data: {}
 		};
 
+		self._current = view.name;
 		self[view.name] = $.extend (defaults, view);
+		self[view.name].attach_events = $.proxy (_attach_events, self[view.name]);
+		self[view.name].detach_events = $.proxy (_detach_events, self[view.name]);
 		self[view.name].render = $.proxy (_render, self[view.name]);
-		if (self[view.name].hide === null) {
-			self[view.name].hide = $.proxy (_hide, self[view.name]);
-		} else {
-			self[view.name].hide = $.proxy (self[view.name].hide, self[view.name]);
+		if (self[view.name].on_hide !== null) {
+			self[view.name].on_hide = $.proxy (self[view.name].on_hide, self[view.name]);
 		}
+		self[view.name].hide = $.proxy (_hide, self[view.name]);
 		return self[view.name];
 	};
 	
